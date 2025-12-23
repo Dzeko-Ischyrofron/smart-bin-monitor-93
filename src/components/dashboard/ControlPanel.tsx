@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, Lock, Unlock, Lightbulb, Settings } from "lucide-react";
+import { Sparkles, Lock, Unlock, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 interface ControlPanelProps {
@@ -15,7 +14,6 @@ interface ControlPanelProps {
 export function ControlPanel({ bins }: ControlPanelProps) {
   const [selectedBin, setSelectedBin] = useState(bins[0]?.id || "");
   const [lidLocked, setLidLocked] = useState(false);
-  const [ledBrightness, setLedBrightness] = useState([75]);
   const [autoSpray, setAutoSpray] = useState(true);
 
   const handleSprayTrigger = () => {
@@ -25,11 +23,6 @@ export function ControlPanel({ bins }: ControlPanelProps) {
   const handleLidToggle = () => {
     setLidLocked(!lidLocked);
     toast.success(`Lid ${!lidLocked ? "locked" : "unlocked"} for ${bins.find(b => b.id === selectedBin)?.name}`);
-  };
-
-  const handleLedChange = (value: number[]) => {
-    setLedBrightness(value);
-    toast.info(`LED brightness set to ${value[0]}%`);
   };
 
   return (
@@ -91,25 +84,6 @@ export function ControlPanel({ bins }: ControlPanelProps) {
           </Button>
         </div>
 
-        {/* LED Brightness */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Lightbulb className="h-4 w-4" />
-                LED Brightness
-              </Label>
-              <p className="text-xs text-muted-foreground">{ledBrightness[0]}%</p>
-            </div>
-          </div>
-          <Slider
-            value={ledBrightness}
-            onValueChange={handleLedChange}
-            max={100}
-            step={5}
-            className="w-full"
-          />
-        </div>
       </CardContent>
     </Card>
   );
