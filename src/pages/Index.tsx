@@ -29,9 +29,9 @@ const mockBin: {
   id: "BIN-001",
   name: "Smart Waste Bin",
   location: "Main Location",
-  fillLevel: 68,
+  fillLevel: 78,
   lidStatus: "closed",
-  odorLevel: "normal",
+  odorLevel: "high",
   battery: 74,
   isOnline: true,
   lastUpdate: "12:40 PM",
@@ -49,10 +49,11 @@ const mockChartData = [
 ];
 
 const mockActivities = [
-  { id: "1", type: "alert" as const, message: "Bin reached 90% capacity", time: "5 minutes ago" },
-  { id: "2", type: "fill" as const, message: "Fill level increased to 75%", time: "10 minutes ago" },
+  { id: "0", type: "alert" as const, message: "⚠️ Emergency odor alert — MQ-135 reading: 380 ppm", time: "Just now" },
+  { id: "1", type: "alert" as const, message: "Bin reached 78% capacity", time: "5 minutes ago" },
+  { id: "2", type: "fill" as const, message: "Fill level increased to 78%", time: "10 minutes ago" },
   { id: "3", type: "collection" as const, message: "Bin was collected and emptied", time: "1 hour ago" },
-  { id: "4", type: "alert" as const, message: "High odor level detected", time: "2 hours ago" },
+  { id: "4", type: "alert" as const, message: "Elevated odor level detected (210 ppm)", time: "2 hours ago" },
 ];
 
 // Battery trends data
@@ -68,19 +69,20 @@ const mockBatteryData = [
 // Odor analysis data
 const mockOdorData = [
   { hour: "6AM", level: 50, alerts: 0 },
-  { hour: "9AM", level: 120, alerts: 1 },
-  { hour: "12PM", level: 200, alerts: 2 },
-  { hour: "3PM", level: 180, alerts: 1 },
-  { hour: "6PM", level: 280, alerts: 3 },
-  { hour: "9PM", level: 150, alerts: 1 },
+  { hour: "9AM", level: 120, alerts: 0 },
+  { hour: "12PM", level: 200, alerts: 1 },
+  { hour: "3PM", level: 180, alerts: 0 },
+  { hour: "6PM", level: 310, alerts: 2 },
+  { hour: "Now", level: 380, alerts: 3 },
 ];
 
 // Alerts data
 const mockAlerts = [
-  { id: "a1", type: "critical" as const, category: "fill" as const, message: "Bin is 90% full - collection needed urgently", binId: "BIN-001", time: "5 min ago" },
+  { id: "a0", type: "critical" as const, category: "odor" as const, message: "⚠️ Emergency: Critical odor level (380 ppm) — immediate attention required", binId: "BIN-001", time: "Just now" },
+  { id: "a1", type: "critical" as const, category: "fill" as const, message: "Bin is 78% full - approaching capacity", binId: "BIN-001", time: "5 min ago" },
   { id: "a2", type: "warning" as const, category: "battery" as const, message: "Battery at 25% - consider recharging soon", binId: "BIN-001", time: "15 min ago" },
-  { id: "a3", type: "warning" as const, category: "odor" as const, message: "Moderate odor levels detected", binId: "BIN-001", time: "20 min ago" },
-  { id: "a4", type: "info" as const, category: "lid" as const, message: "Lid opened for extended period", binId: "BIN-001", time: "1 hour ago" },
+  { id: "a3", type: "warning" as const, category: "odor" as const, message: "Elevated odor levels detected (210 ppm)", binId: "BIN-001", time: "2 hours ago" },
+  { id: "a4", type: "info" as const, category: "lid" as const, message: "Lid opened for extended period", binId: "BIN-001", time: "3 hours ago" },
 ];
 
 // Live sensor readings
@@ -90,7 +92,7 @@ const mockSensorReadings = [{
   ultrasonic: Math.round((100 - mockBin.fillLevel) * 0.5),
   fillPercent: mockBin.fillLevel,
   irSensor: mockBin.handDetected,
-  mq135: mockBin.odorLevel === "high" ? 350 : mockBin.odorLevel === "moderate" ? 180 : 80,
+  mq135: 380,
   servoAngle: mockBin.lidStatus === "open" ? 90 : 0,
   battery: mockBin.battery,
   isOnline: mockBin.isOnline,
@@ -145,9 +147,9 @@ const Index = () => {
           />
           <StatCard
             title="Odor Level"
-            value={mockBin.odorLevel === "high" ? "High" : mockBin.odorLevel === "moderate" ? "Moderate" : "Normal"}
+            value={mockBin.odorLevel === "high" ? "CRITICAL" : mockBin.odorLevel === "moderate" ? "Elevated" : "Normal"}
             icon={Wind}
-            status={mockBin.odorLevel !== "normal" ? "warning" : "success"}
+            status={mockBin.odorLevel === "high" ? "danger" : mockBin.odorLevel !== "normal" ? "warning" : "success"}
           />
           <StatCard
             title="Battery"
