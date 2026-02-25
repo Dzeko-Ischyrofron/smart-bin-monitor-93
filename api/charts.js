@@ -34,12 +34,12 @@ export default function handler(req, res) {
 
     // Odor analysis throughout the day
     const odorData = [
-      { hour: "6AM", level: 50, sprays: 0 },
-      { hour: "9AM", level: 120, sprays: 1 },
-      { hour: "12PM", level: 200, sprays: 2 },
-      { hour: "3PM", level: 180, sprays: 2 },
-      { hour: "6PM", level: 280, sprays: 3 },
-      { hour: "9PM", level: 150, sprays: 1 },
+      { hour: "6AM", level: 50, alerts: 0 },
+      { hour: "9AM", level: 120, alerts: 1 },
+      { hour: "12PM", level: 200, alerts: 2 },
+      { hour: "3PM", level: 180, alerts: 1 },
+      { hour: "6PM", level: 280, alerts: 3 },
+      { hour: "9PM", level: 150, alerts: 1 },
     ];
 
     return res.status(200).json({

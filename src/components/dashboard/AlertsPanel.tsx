@@ -7,7 +7,7 @@ import { useState } from "react";
 interface Alert {
   id: string;
   type: "critical" | "warning" | "info";
-  category: "fill" | "battery" | "odor" | "lid" | "connection";
+  category: "fill" | "battery" | "odor" | "lid" | "connection" | "connectivity";
   message: string;
   binId: string;
   time: string;
@@ -23,6 +23,7 @@ const categoryIcons = {
   odor: Wind,
   lid: DoorOpen,
   connection: Wifi,
+  connectivity: Wifi,
 };
 
 const typeStyles = {

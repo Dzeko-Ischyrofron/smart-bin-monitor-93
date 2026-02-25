@@ -18,7 +18,7 @@ export default function handler(req, res) {
       const { command, binId, value } = req.body || {};
 
       // Validate command
-      const validCommands = ["spray", "lock_lid", "unlock_lid", "set_brightness", "reset"];
+      const validCommands = ["lock_lid", "unlock_lid", "set_brightness", "reset"];
 
       if (!command || !validCommands.includes(command)) {
         return res.status(400).json({
@@ -44,9 +44,6 @@ export default function handler(req, res) {
 
       // Command-specific responses
       switch (command) {
-        case "spray":
-          response.message = "Odor control spray activated";
-          break;
         case "lock_lid":
           response.message = "Lid locked successfully";
           break;

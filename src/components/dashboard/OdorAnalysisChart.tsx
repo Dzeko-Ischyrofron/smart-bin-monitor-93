@@ -4,12 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import { Wind } from "lucide-react";
 
 interface OdorAnalysisChartProps {
-  data: Array<{ hour: string; level: number; sprays: number }>;
+  data: Array<{ hour: string; level: number; alerts: number }>;
 }
 
 const chartConfig = {
   level: { label: "Odor Level (ppm)", color: "hsl(var(--warning))" },
-  sprays: { label: "Spray Activations", color: "hsl(var(--primary))" },
+  alerts: { label: "Odor Alerts", color: "hsl(var(--destructive))" },
 };
 
 export function OdorAnalysisChart({ data }: OdorAnalysisChartProps) {
@@ -30,7 +30,7 @@ export function OdorAnalysisChart({ data }: OdorAnalysisChartProps) {
               <YAxis className="text-xs text-muted-foreground" />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="level" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="sprays" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="alerts" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
@@ -40,8 +40,8 @@ export function OdorAnalysisChart({ data }: OdorAnalysisChartProps) {
             <span className="text-muted-foreground">Odor Level (ppm)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded bg-primary" />
-            <span className="text-muted-foreground">Spray Activations</span>
+            <div className="w-3 h-3 rounded bg-destructive" />
+            <span className="text-muted-foreground">Odor Alerts Triggered</span>
           </div>
         </div>
       </CardContent>
