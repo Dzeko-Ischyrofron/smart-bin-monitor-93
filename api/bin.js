@@ -13,7 +13,6 @@ let binData = {
   isOnline: true,
   lastUpdate: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
   handDetected: false,
-  sprayActive: false,
 };
 
 export default function handler(req, res) {
@@ -58,9 +57,6 @@ export default function handler(req, res) {
       }
       if (typeof updates.handDetected === "boolean") {
         binData.handDetected = updates.handDetected;
-      }
-      if (typeof updates.sprayActive === "boolean") {
-        binData.sprayActive = updates.sprayActive;
       }
 
       // Update timestamp

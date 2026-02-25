@@ -66,8 +66,7 @@ GET /api/bin
     "battery": 74,
     "isOnline": true,
     "lastUpdate": "12:40 PM",
-    "handDetected": false,
-    "sprayActive": false
+    "handDetected": false
   },
   "timestamp": "2024-01-15T10:30:00.000Z"
 }
@@ -83,8 +82,7 @@ Content-Type: application/json
   "lidStatus": "open",
   "odorLevel": "moderate",
   "battery": 70,
-  "handDetected": true,
-  "sprayActive": false
+  "handDetected": true
 }
 ```
 
@@ -141,6 +139,8 @@ Content-Type: application/json
 }
 ```
 
+**Note:** When `mq135` exceeds the odor threshold (200 ppm), the system automatically triggers an emergency odor alert on the dashboard and logs it in the activity history.
+
 ---
 
 ### 4. Chart Data
@@ -164,8 +164,8 @@ GET /api/charts
       "..."
     ],
     "odor": [
-      { "hour": "6AM", "level": 50, "sprays": 0 },
-      { "hour": "9AM", "level": 120, "sprays": 1 },
+      { "hour": "6AM", "level": 50, "alerts": 0 },
+      { "hour": "9AM", "level": 120, "alerts": 1 },
       "..."
     ]
   },
@@ -202,15 +202,15 @@ GET /api/alerts
 }
 ```
 
-#### Create Alert
+#### Create Alert (e.g., Emergency Odor Alert from ESP32)
 ```
 POST /api/alerts
 Content-Type: application/json
 
 {
-  "type": "warning",
-  "category": "battery",
-  "message": "Battery level low",
+  "type": "critical",
+  "category": "odor",
+  "message": "Emergency: Critical odor level detected (350 ppm) - immediate attention required",
   "binId": "BIN-001"
 }
 ```
@@ -253,8 +253,8 @@ POST /api/activities
 Content-Type: application/json
 
 {
-  "type": "fill",
-  "message": "Fill level increased to 80%"
+  "type": "alert",
+  "message": "Emergency odor alert triggered - MQ-135 reading: 350 ppm"
 }
 ```
 
@@ -322,13 +322,12 @@ POST /api/controls
 Content-Type: application/json
 
 {
-  "command": "spray",
+  "command": "lock_lid",
   "binId": "BIN-001"
 }
 ```
 
 **Valid Commands:**
-- `spray` - Activate odor control spray
 - `lock_lid` - Lock the bin lid
 - `unlock_lid` - Unlock the bin lid
 - `set_brightness` - Set LED brightness (include `value: 0-100`)
@@ -338,9 +337,9 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Odor control spray activated",
+  "message": "Lid locked successfully",
   "data": {
-    "command": "spray",
+    "command": "lock_lid",
     "binId": "BIN-001",
     "value": null,
     "executedAt": "2024-01-15T10:30:00.000Z"
@@ -350,16 +349,30 @@ Content-Type: application/json
 
 ---
 
+## Emergency Odor Alert System
+
+When the MQ-135 gas sensor detects odor above the threshold (default: 200 ppm), the ESP32 should:
+
+1. **Create an alert** via `POST /api/alerts` with `type: "critical"` and `category: "odor"`
+2. **Log the activity** via `POST /api/activities` with the sensor reading
+3. **Update bin status** via `POST /api/bin` with `odorLevel: "high"`
+
+The dashboard will automatically display an emergency notification when odor levels are critical.
+
+---
+
 ## ESP32 Integration Example
 
 ```cpp
-// Example ESP32 code to send sensor data
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
+const char* API_BASE = "https://your-project.vercel.app/api";
+const int ODOR_THRESHOLD = 200; // ppm
+
 void sendSensorData() {
   HTTPClient http;
-  http.begin("https://your-project.vercel.app/api/sensors");
+  http.begin(String(API_BASE) + "/sensors");
   http.addHeader("Content-Type", "application/json");
   
   StaticJsonDocument<200> doc;
@@ -374,6 +387,56 @@ void sendSensorData() {
   
   int httpResponseCode = http.POST(jsonString);
   http.end();
+
+  // Check if odor threshold exceeded
+  if (airQualityValue > ODOR_THRESHOLD) {
+    triggerOdorAlert(airQualityValue);
+  }
+}
+
+void triggerOdorAlert(int ppmValue) {
+  // 1. Create emergency alert
+  HTTPClient http;
+  http.begin(String(API_BASE) + "/alerts");
+  http.addHeader("Content-Type", "application/json");
+  
+  StaticJsonDocument<256> doc;
+  doc["type"] = "critical";
+  doc["category"] = "odor";
+  doc["message"] = "Emergency: Critical odor level detected (" + String(ppmValue) + " ppm) - immediate attention required";
+  doc["binId"] = "BIN-001";
+  
+  String jsonString;
+  serializeJson(doc, jsonString);
+  http.POST(jsonString);
+  http.end();
+
+  // 2. Log activity
+  HTTPClient http2;
+  http2.begin(String(API_BASE) + "/activities");
+  http2.addHeader("Content-Type", "application/json");
+  
+  StaticJsonDocument<256> doc2;
+  doc2["type"] = "alert";
+  doc2["message"] = "Emergency odor alert triggered - MQ-135 reading: " + String(ppmValue) + " ppm";
+  
+  String jsonString2;
+  serializeJson(doc2, jsonString2);
+  http2.POST(jsonString2);
+  http2.end();
+
+  // 3. Update bin odor status
+  HTTPClient http3;
+  http3.begin(String(API_BASE) + "/bin");
+  http3.addHeader("Content-Type", "application/json");
+  
+  StaticJsonDocument<64> doc3;
+  doc3["odorLevel"] = "high";
+  
+  String jsonString3;
+  serializeJson(doc3, jsonString3);
+  http3.POST(jsonString3);
+  http3.end();
 }
 ```
 

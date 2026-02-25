@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { Trash2, MapPin, Battery, Wifi, DoorOpen, DoorClosed, Wind, Hand, Sparkles, AlertCircle } from "lucide-react";
+import { Trash2, MapPin, Battery, Wifi, DoorOpen, DoorClosed, Wind, Hand, AlertCircle, ShieldAlert } from "lucide-react";
 
 interface BinStatusCardProps {
   id: string;
@@ -14,7 +14,6 @@ interface BinStatusCardProps {
   isOnline: boolean;
   lastUpdate: string;
   handDetected?: boolean;
-  sprayActive?: boolean;
 }
 
 const getFillStatus = (level: number) => {
@@ -40,7 +39,6 @@ export function BinStatusCard({
   isOnline,
   lastUpdate,
   handDetected = false,
-  sprayActive = false,
 }: BinStatusCardProps) {
   const fillStatus = getFillStatus(fillLevel);
   const odorStatus = getOdorStatus(odorLevel);
@@ -153,11 +151,16 @@ export function BinStatusCard({
           </div>
         </div>
 
-        {/* Spray Status */}
-        {sprayActive && (
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-info/10 border border-info/20">
-            <Sparkles className="h-4 w-4 text-info animate-pulse" />
-            <span className="text-sm font-medium text-info">Odor control spray active</span>
+        {/* Odor Emergency Alert */}
+        {odorLevel !== "normal" && (
+          <div className={cn(
+            "flex items-center gap-2 p-2 rounded-lg border",
+            odorLevel === "high" ? "bg-destructive/10 border-destructive/20" : "bg-warning/10 border-warning/20"
+          )}>
+            <ShieldAlert className={cn("h-4 w-4 animate-pulse", odorLevel === "high" ? "text-destructive" : "text-warning")} />
+            <span className={cn("text-sm font-medium", odorLevel === "high" ? "text-destructive" : "text-warning")}>
+              {odorLevel === "high" ? "⚠️ Emergency: Critical odor level — immediate attention required" : "Elevated odor detected — monitor closely"}
+            </span>
           </div>
         )}
 
